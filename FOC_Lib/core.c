@@ -11,6 +11,8 @@ typedef struct
     float (*getTheta)(void);
     PID_Unit *iq;
     PID_Unit *id;
+    PID_Unit *speed;
+    PID_Unit *position;
     void (*PWM_Set)(uint32_t A, uint32_t B, uint32_t C);
 } FOC_Core;
 
@@ -36,6 +38,8 @@ void FOC_UpdateFunction(FOC_Core *core)
 
     float Uq, Ud;
     float U_alpha, U_beta;
+
+    uint32_t pwmA, pwmB, pwmC;
 
     // 读AB两相电流
     iDetA = core->getIa();
@@ -67,4 +71,8 @@ void FOC_UpdateFunction(FOC_Core *core)
     U_beta = Ud * st + Uq * ct;
 
     // SVPWM
+    // 计算过程
+    
+
+    core->PWM_Set(pwmA, pwmB, pwmC);
 }
