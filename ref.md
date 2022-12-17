@@ -1,7 +1,9 @@
+# 参考
+
 1. [SVPWM](https://zhuanlan.zhihu.com/p/47766452)
 2. [FOC](https://zhuanlan.zhihu.com/p/147659820 "彭志辉")
 
-# PARK变换
+## PARK变换
 
 变换
 
@@ -31,7 +33,7 @@ i_d\\i_q\\i_0
 \end{bmatrix}
 $$
 
-# Clark变换
+## Clark变换
 
 $$
 \begin{bmatrix}
@@ -51,7 +53,7 @@ $$
 \end{bmatrix}
 $$
 
-# [伏秒原则](https://www.zhihu.com/question/437481153/answer/1667097183)
+## [伏秒原则](https://www.zhihu.com/question/437481153/answer/1667097183)
 
 伏秒原则，处于稳定状态的电感，开关导通时间（电流上升段）的伏秒数须与开关关断（电流下降段）时的伏秒数在数值上相等，尽管两者符号相反。这也表示，绘出电感电压对时间的曲线，导通时段曲线的面积必须等于关断时段曲线的面积
 

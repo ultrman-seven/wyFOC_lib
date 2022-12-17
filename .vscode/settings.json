@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "focpid.h": "c"
+        "focpid.h": "c",
+        "foccore.h": "c",
+        "stdint.h": "c",
+        "stdlib.h": "c"
     }
 }

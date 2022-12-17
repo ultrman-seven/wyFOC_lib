@@ -2,30 +2,6 @@
 #include "stdlib.h"
 #include "math.h"
 
-#include "focPid.h"
-#include "stdint.h"
-typedef struct
-{
-    float Udc;
-    union
-    {
-        uint32_t Period;
-        uint32_t T;
-    };
-
-    float (*getIa)(void);
-    float (*getIb)(void);
-    float (*getTheta)(void);
-    PID_Unit *iq;
-    PID_Unit *id;
-    PID_Unit *speed;
-    PID_Unit *position;
-    void (*PWM_Set)(uint32_t A, uint32_t B, uint32_t C);
-} FOC_Core;
-
-void FOC_Init(FOC_Core *core);
-void FOC_UpdateFunction(FOC_Core *core);
-
 void FOC_Init(FOC_Core *core)
 {
     PID_Unit pidID = {.kd = 0, .target = 0};
@@ -44,10 +20,41 @@ const uint8_t sectorHighPosition[8][3] = {
     {2, 1, 3},
     {3, 1, 2},
     {3, 2, 1},
-    {2, 3, 1},
-    {1, 3, 2}};
+    {1, 3, 2},
+    {2, 3, 1}};
 
-void (*__timeCompute[8])(float,float, float *);
+void __sector1Time(float alpha, float beta, float *time)
+{ // 0467
+    time[1] = 0.8660254037844386 * alpha - 0.5 * beta;
+    time[2] = beta;
+}
+void __sector2Time(float alpha, float beta, float *time)
+{ // 0267
+    time[1] = -(0.8660254037844386 * alpha - 0.5 * beta);
+    time[2] = time[1];
+}
+void __sector3Time(float alpha, float beta, float *time)
+{ // 0237
+    time[1] = beta;
+    time[2] = -0.8660254037844386 * alpha - 0.5 * beta;
+}
+void __sector4Time(float alpha, float beta, float *time)
+{ // 0137
+    time[1] = -beta;
+    time[2] = -(0.8660254037844386 * alpha - 0.5 * beta);
+}
+void __sector5Time(float alpha, float beta, float *time)
+{ // 0157
+    time[1] = -0.8660254037844386 * alpha - 0.5 * beta;
+    time[2]=0.8660254037844386 * alpha - 0.5 * beta;
+}
+void __sector6Time(float alpha, float beta, float *time)
+{ // 0457
+    time[1] = 0.8660254037844386 * alpha + 0.5 * beta;
+    time[2] = -beta;
+}
+
+void (*__timeCompute[8])(float, float, float *) = {__sector1Time, __sector2Time, __sector3Time, __sector4Time, __sector5Time, __sector6Time};
 
 static float __computePWM_duty(uint8_t p, float *t)
 {
@@ -105,6 +112,10 @@ void FOC_UpdateFunction(FOC_Core *core)
     float ctrlTimes[4];
 
     __timeCompute[sector](U_alpha, U_beta, ctrlTimes);
+    ctrlTimes[1] *= core->T;
+    ctrlTimes[2] *= core->T;
+    ctrlTimes[0] = 0.5 * (core->T - ctrlTimes[1] - ctrlTimes[2]);
+    ctrlTimes[3] = ctrlTimes[0];
 
     pwmA = __computePWM_duty(sectorHighPosition[sector][0], ctrlTimes) * core->T;
     pwmC = __computePWM_duty(sectorHighPosition[sector][1], ctrlTimes) * core->T;
